@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Seats | ChaiCode Cinema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: "Inter", sans-serif; background: #111; min-height: 100vh; color: white; }
+
+      nav {
+        background: #111; padding: 0 48px; height: 68px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100;
+      }
+      .nav-left { display: flex; align-items: center; gap: 40px; }
+      .nav-logo { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+      .nav-logo span { color: #e23744; }
+      .nav-links { display: flex; gap: 28px; }
+      .nav-links a { font-size: 14px; font-weight: 500; color: #888; text-decoration: none; transition: color 0.2s; }
+      .nav-links a.active, .nav-links a:hover { color: white; }
+      .nav-right { display: flex; align-items: center; gap: 16px; }
+      .user-badge { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: #ccc; }
+      .avatar {
+        width: 36px; height: 36px; background: #e23744; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 14px; font-weight: 700;
+      }
+      .logout-btn {
+        font-size: 13px; color: #888; background: none;
+        border: 1px solid #333; padding: 6px 16px; border-radius: 6px;
+        cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.2s;
+      }
+      .logout-btn:hover { border-color: #666; color: white; }
+      .signin-btn {
+        font-size: 14px; font-weight: 600; color: white;
+        background: #e23744; padding: 8px 20px; border-radius: 8px;
+        text-decoration: none; transition: background 0.2s;
+      }
+      .signin-btn:hover { background: #c0202e; }
+
+      /* Movie info bar */
+      .movie-bar {
+        background: #1a1a1a;
+        border-bottom: 1px solid #222;
+        padding: 16px 48px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .movie-bar img { width: 50px; height: 70px; object-fit: cover; border-radius: 6px; }
+      .movie-bar-info h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+      .movie-bar-info p { font-size: 13px; color: #666; }
+      .back-btn {
+        margin-left: auto;
+        font-size: 13px; color: #888; text-decoration: none;
+        display: flex; align-items: center; gap: 6px;
+        border: 1px solid #333; padding: 7px 16px; border-radius: 6px;
+        transition: all 0.2s;
+      }
+      .back-btn:hover { color: white; border-color: #666; }
+
+      .main { max-width: 900px; margin: 0 auto; padding: 48px 24px; }
+
+      /* Screen */
+      .screen-wrap { text-align: center; margin-bottom: 48px; }
+      .screen-bar {
+        height: 3px;
+        background: linear-gradient(90deg, transparent 0%, #e23744 30%, #e23744 70%, transparent 100%);
+        border-radius: 2px;
+        margin-bottom: 8px;
+        box-shadow: 0 4px 20px rgba(226,55,68,0.4);
+      }
+      .screen-label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #555; }
+
+      /* Legend */
+      .legend {
+        display: flex; justify-content: center; gap: 28px;
+        margin-bottom: 40px;
+      }
+      .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
+      .legend-dot { width: 16px; height: 16px; border-radius: 4px; }
+      .legend-dot.available { background: #1a3a1a; border: 1.5px solid #22c55e; }
+      .legend-dot.booked { background: #2a2a2a; border: 1.5px solid #444; }
+      .legend-dot.selected { background: #e23744; border: 1.5px solid #e23744; }
+
+      /* Seats */
+      .seats-section { background: #161616; border-radius: 16px; padding: 40px; border: 1px solid #222; }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        justify-content: center;
+      }
+
+      .row-label {
+        width: 24px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .row-gap { width: 24px; flex-shrink: 0; }
+
+      .seat-wrapper { position: relative; display: inline-block; }
+
+      .seat {
+        width: 38px; height: 38px; border-radius: 6px 6px 4px 4px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 600; cursor: pointer;
+        transition: all 0.15s; user-select: none;
+        border: 1.5px solid;
+      }
+
+      .seat.available {
+        background: #0d1f0d; border-color: #22c55e; color: #22c55e;
+      }
+      .seat.available:hover {
+        background: #22c55e; color: white; border-color: #22c55e;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(34,197,94,0.4);
+      }
+
+      .seat.booked {
+        background: #1e1e1e; border-color: #333; color: #444; cursor: not-allowed;
+      }
+
+      .tooltip {
+        position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+        background: #333; color: white; font-size: 11px; font-weight: 500;
+        padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+        opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 10;
+        border: 1px solid #444;
+      }
+      .seat-wrapper:hover .tooltip { opacity: 1; }
+
+      .not-logged-in-bar {
+        background: rgba(226,55,68,0.1); border: 1px solid rgba(226,55,68,0.3);
+        border-radius: 10px; padding: 14px 20px; font-size: 14px;
+        color: #f87171; margin-bottom: 28px; text-align: center;
+      }
+      .not-logged-in-bar a { color: #e23744; font-weight: 600; text-decoration: none; }
+
+      .no-movie {
+        text-align: center; padding: 80px 20px; font-size: 16px; color: #555;
+      }
+      .no-movie a { color: #e23744; font-weight: 600; text-decoration: none; }
+      .no-movie .big { font-size: 48px; margin-bottom: 16px; }
+
+      /* Price strip at bottom */
+      .price-strip {
+        margin-top: 32px;
+        background: #1a1a1a;
+        border: 1px solid #222;
+        border-radius: 12px;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .price-info { font-size: 14px; color: #888; }
+      .price-info span { color: white; font-weight: 700; font-size: 16px; }
+      .price-tag { font-size: 13px; color: #555; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <div class="nav-logo">chaicode <span>cinema</span></div>
+        <div class="nav-links">
+          <a href="/movies">Movies</a>
+          <a href="/" class="active">Seats</a>
+        </div>
+      </div>
+      <div class="nav-right" id="navRight"></div>
+    </nav>
+
+    <div id="movieBar" class="movie-bar" style="display:none;">
+      <img id="barImg" src="" alt="" />
+      <div class="movie-bar-info">
+        <h2 id="barTitle"></h2>
+        <p id="barMeta">Select your seats below</p>
+      </div>
+      <a href="/movies" class="back-btn">← All Movies</a>
+    </div>
+
+    <div class="main">
+      <div id="notLoggedInBar" class="not-logged-in-bar" style="display:none;">
+        ⚠️ Please <a href="/login">login</a> to book seats.
+      </div>
+
+      <div id="noMovie" class="no-movie" style="display:none;">
+        <div class="big">🎬</div>
+        No movie selected.<br /><br />
+        <a href="/movies">Browse Movies →</a>
+      </div>
+
+      <div id="content" style="display:none;">
+        <div class="screen-wrap">
+          <div class="screen-bar"></div>
+          <div class="screen-label">All eyes this way please!</div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot available"></div> Available</div>
+          <div class="legend-item"><div class="legend-dot booked"></div> Sold</div>
+        </div>
+
+        <div class="seats-section" id="seatsSection"></div>
+
+        <div class="price-strip">
+          <div class="price-info">Ticket Price: <span>₹250</span> per seat</div>
+          <div class="price-tag">Convenience fee may apply</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      const username = localStorage.getItem("username");
+      const movieId = localStorage.getItem("selectedMovieId");
+      const movieTitle = localStorage.getItem("selectedMovieTitle");
+      const moviePoster = localStorage.getItem("selectedMoviePoster");
+
+      // Nav
+      const navRight = document.getElementById("navRight");
+      if (token && username) {
+        navRight.innerHTML = `
+          <div class="user-badge">
+            <div class="avatar">${username[0].toUpperCase()}</div>
+            <span>${username}</span>
+          </div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        `;
+      } else {
+        navRight.innerHTML = `<a href="/login" class="signin-btn">Sign In</a>`;
+        document.getElementById("notLoggedInBar").style.display = "block";
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "/login";
+      }
+
+      if (!movieId) {
+        document.getElementById("noMovie").style.display = "block";
+      } else {
+        document.getElementById("content").style.display = "block";
+        document.getElementById("movieBar").style.display = "flex";
+        document.getElementById("barImg").src = moviePoster;
+        document.getElementById("barTitle").textContent = movieTitle;
+        loadSeats();
+      }
+
+      async function loadSeats() {
+        const res = await fetch(`/seats/${movieId}`);
+        const seats = await res.json();
+        seats.sort((a, b) => a.id - b.id);
+
+        const section = document.getElementById("seatsSection");
+        const rowLabels = ["A", "B", "C", "D"];
+        const seatsPerRow = 5;
+
+        // Split 20 seats into 4 rows of 5
+        rowLabels.forEach((label, rowIndex) => {
+          const rowSeats = seats.slice(rowIndex * seatsPerRow, (rowIndex + 1) * seatsPerRow);
+          const rowDiv = document.createElement("div");
+          rowDiv.className = "row";
+
+          // Row label left
+          const labelLeft = document.createElement("div");
+          labelLeft.className = "row-label";
+          labelLeft.textContent = label;
+          rowDiv.appendChild(labelLeft);
+
+          // First 2 seats
+          rowSeats.slice(0, 2).forEach((seat, i) => {
+            rowDiv.appendChild(createSeat(seat, rowIndex * seatsPerRow + i + 1));
+          });
+
+          // Gap
+          const gap = document.createElement("div");
+          gap.className = "row-gap";
+          rowDiv.appendChild(gap);
+
+          // Next 3 seats
+          rowSeats.slice(2, 5).forEach((seat, i) => {
+            rowDiv.appendChild(createSeat(seat, rowIndex * seatsPerRow + i + 3));
+          });
+
+          // Row label right
+          const labelRight = document.createElement("div");
+          labelRight.className = "row-label";
+          labelRight.textContent = label;
+          rowDiv.appendChild(labelRight);
+
+          section.appendChild(rowDiv);
+        });
+      }
+
+      function createSeat(seat, displayNum) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "seat-wrapper";
+
+        const seatDiv = document.createElement("div");
+        seatDiv.className = seat.isbooked ? "seat booked" : "seat available";
+        seatDiv.textContent = String(displayNum).padStart(2, "0");
+
+        if (seat.isbooked) {
+          const tooltip = document.createElement("div");
+          tooltip.className = "tooltip";
+          tooltip.textContent = `Booked by ${seat.name || "someone"}`;
+          wrapper.appendChild(seatDiv);
+          wrapper.appendChild(tooltip);
+        } else {
+          seatDiv.addEventListener("click", async () => {
+            if (!token) {
+              window.location.href = "/login";
+              return;
+            }
+            const name = prompt(`Book seat ${displayNum}?\nEnter your name:`);
+            if (!name) return;
+
+            try {
+              const bookRes = await fetch(`/${seat.id}/${name}`, {
+                method: "PUT",
+                headers: { "Authorization": "Bearer " + token }
+              });
+              const data = await bookRes.json();
+
+              if (data.error) {
+                alert("Could not book: " + data.error);
+              } else {
+                seatDiv.className = "seat booked";
+                seatDiv.onclick = null;
+                const tooltip = document.createElement("div");
+                tooltip.className = "tooltip";
+                tooltip.textContent = `Booked by ${name}`;
+                wrapper.appendChild(tooltip);
+                alert(`✅ Seat ${displayNum} booked for ${name}!`);
+              }
+            } catch (err) {
+              alert("Error: " + err);
+            }
+          });
+          wrapper.appendChild(seatDiv);
+        }
+
+        return wrapper;
+      }
+    </script>
+  </body>
+</html>

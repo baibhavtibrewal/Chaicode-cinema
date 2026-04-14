@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movies | ChaiCode Cinema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: "Inter", sans-serif; background: #111; min-height: 100vh; color: white; }
+
+      nav {
+        background: rgba(17,17,17,0.95);
+        backdrop-filter: blur(10px);
+        padding: 0 40px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #222;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
+      }
+      .nav-logo { font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+      .nav-logo span { color: #e23744; }
+      .nav-right { display: flex; align-items: center; gap: 14px; }
+      .user-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; }
+      .avatar {
+        width: 32px; height: 32px; background: #e23744; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 13px; font-weight: 700;
+      }
+      .logout-btn {
+        font-size: 12px; color: #888; background: none;
+        border: 1px solid #333; padding: 5px 12px; border-radius: 6px;
+        cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.2s;
+      }
+      .logout-btn:hover { border-color: #666; color: white; }
+      .signin-btn {
+        font-size: 13px; font-weight: 600; color: white;
+        background: #e23744; padding: 7px 18px; border-radius: 7px;
+        text-decoration: none; transition: background 0.2s;
+      }
+      .signin-btn:hover { background: #c0202e; }
+
+      /* Hero */
+      .hero {
+        margin-top: 60px;
+        position: relative;
+        height: 340px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+      }
+
+      .hero-poster {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        display: block;
+      }
+
+      .hero-gradient {
+        position: absolute;
+        left: 0; top: 0; right: 0; bottom: 0;
+        background: linear-gradient(
+          to right,
+          rgba(17,17,17,0.1) 0%,
+          rgba(17,17,17,0.45) 50%,
+          rgba(17,17,17,0.92) 72%,
+          #111 100%
+        );
+      }
+
+      .hero-bottom-fade {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 70px;
+        background: linear-gradient(to top, #111, transparent);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 0 60px;
+        margin-left: auto;
+        width: 400px;
+      }
+
+      .hero-badge {
+        display: inline-block;
+        background: #e23744;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+      }
+      .hero-content h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; line-height: 1.15; }
+      .hero-content p { font-size: 13px; color: #bbb; margin-bottom: 18px; }
+      .hero-btn {
+        display: inline-block; background: #e23744; color: white;
+        font-size: 13px; font-weight: 700; padding: 10px 22px; border-radius: 7px;
+        text-decoration: none; cursor: pointer; border: none;
+        font-family: "Inter", sans-serif; transition: background 0.2s;
+      }
+      .hero-btn:hover { background: #c0202e; }
+
+      /* Main */
+      .main { padding: 36px 40px; }
+
+      .section-title { font-size: 17px; font-weight: 700; color: white; margin-bottom: 20px; }
+
+      /* Compact 6-column grid */
+      .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 16px;
+        margin-bottom: 48px;
+      }
+
+      .movie-card {
+        background: #1a1a1a;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #222;
+      }
+      .movie-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        border-color: #444;
+      }
+
+      .movie-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+
+      .movie-info { padding: 8px; }
+      .movie-title { font-size: 11px; font-weight: 700; color: white; margin-bottom: 2px; line-height: 1.3; }
+      .movie-meta { font-size: 10px; color: #555; margin-bottom: 5px; }
+      .movie-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 7px; align-items: center; }
+      .tag { font-size: 9px; font-weight: 500; padding: 1px 5px; border-radius: 3px; background: #222; color: #888; border: 1px solid #2a2a2a; }
+      .rating { font-size: 10px; font-weight: 700; color: #22c55e; }
+
+      .book-btn {
+        width: 100%; padding: 6px; background: #e23744; color: white; border: none;
+        border-radius: 5px; font-family: "Inter", sans-serif; font-size: 10px;
+        font-weight: 600; cursor: pointer; transition: background 0.2s;
+      }
+      .book-btn:hover { background: #c0202e; }
+
+      /* Info strip */
+      .info-strip {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+        padding-top: 32px; border-top: 1px solid #1e1e1e;
+      }
+      .info-card {
+        background: #161616; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; text-align: center;
+      }
+      .info-card .icon { font-size: 24px; margin-bottom: 8px; }
+      .info-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+      .info-card p { font-size: 12px; color: #555; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-logo">chaicode <span>cinema</span></div>
+      <div class="nav-right" id="navRight"></div>
+    </nav>
+
+    <div class="hero">
+      <img class="hero-poster" src="/Dhurandhar.png" alt="Dhurandhar The Revenge" />
+      <div class="hero-gradient"></div>
+      <div class="hero-bottom-fade"></div>
+      <div class="hero-content">
+        <div class="hero-badge">Featured</div>
+        <h1>Dhurandhar<br/>The Revenge</h1>
+        <p>Action · Hindi · 3h 49m · ★ 9.5</p>
+        <button class="hero-btn" onclick="bookHero()">Book Seats Now</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="section-title">Now Showing</div>
+      <div class="movies-grid" id="moviesGrid"></div>
+
+      <div class="info-strip">
+        <div class="info-card">
+          <div class="icon">🎟️</div>
+          <h3>Easy Booking</h3>
+          <p>Select your favourite seats in just a few clicks</p>
+        </div>
+        <div class="info-card">
+          <div class="icon">🔒</div>
+          <h3>Secure</h3>
+          <p>Your bookings are protected with JWT authentication</p>
+        </div>
+        <div class="info-card">
+          <div class="icon">⚡</div>
+          <h3>Instant Confirmation</h3>
+          <p>Get instant seat confirmation with no waiting</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      const username = localStorage.getItem("username");
+
+      const navRight = document.getElementById("navRight");
+      if (token && username) {
+        navRight.innerHTML = `
+          <div class="user-badge">
+            <div class="avatar">${username[0].toUpperCase()}</div>
+            <span>${username}</span>
+          </div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        `;
+      } else {
+        navRight.innerHTML = `<a href="/login" class="signin-btn">Sign In</a>`;
+      }
+
+      function logout() { localStorage.clear(); window.location.reload(); }
+
+      function bookHero() {
+        if (!token) { window.location.href = "/login"; return; }
+        localStorage.setItem("selectedMovieId", 1);
+        localStorage.setItem("selectedMovieTitle", "Dhurandhar The Revenge");
+        localStorage.setItem("selectedMoviePoster", "/dhurandhar.avif");
+        window.location.href = "/seats-page";
+      }
+
+      async function loadMovies() {
+        const res = await fetch("/api/movies");
+        const movies = await res.json();
+        const grid = document.getElementById("moviesGrid");
+        movies.forEach(m => {
+          const card = document.createElement("div");
+          card.className = "movie-card";
+          card.innerHTML = `
+            <img class="movie-poster" src="${m.poster}" alt="${m.title}" />
+            <div class="movie-info">
+              <div class="movie-title">${m.title}</div>
+              <div class="movie-meta">${m.duration} · ${m.language}</div>
+              <div class="movie-tags">
+                <span class="rating">★ ${m.rating}</span>
+                <span class="tag">${m.genre}</span>
+              </div>
+              <button class="book-btn" onclick="bookMovie(${m.id}, '${m.title}', '${m.poster}')">Book Seats</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      function bookMovie(id, title, poster) {
+        if (!token) { window.location.href = "/login"; return; }
+        localStorage.setItem("selectedMovieId", id);
+        localStorage.setItem("selectedMovieTitle", title);
+        localStorage.setItem("selectedMoviePoster", poster);
+        window.location.href = "/seats-page";
+      }
+
+      loadMovies();
+    </script>
+  </body>
+</html>
