@@ -188,4 +188,6 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/movies.html");
 });
 
-app.listen(port, () => console.log("Server starting on port: " + port));
+app.listen(port, "0.0.0.0", () => {
+  console.log("🚀 Server running on port:", port);
+});
