@@ -51,6 +51,14 @@ const pool = new pg.Pool({
     rejectUnauthorized: false
   }
 });
+
+pool.connect()
+  .then(() => {
+    console.log("✅ DB Connected");
+  })
+  .catch((err) => {
+    console.error("❌ DB Connection Error:", err);
+  });
 const app = express();
 app.use(cors());
 app.use(express.json());
