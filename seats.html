@@ -9,30 +9,67 @@
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: "Inter", sans-serif; background: #111; min-height: 100vh; color: white; }
 
+      /* ── NAV ── */
       nav {
         background: #111; padding: 0 48px; height: 68px;
         display: flex; align-items: center; justify-content: space-between;
-        border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100;
+        border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 200;
       }
       .nav-left { display: flex; align-items: center; gap: 40px; }
-      .nav-logo { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+      .nav-logo { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; text-decoration: none; }
       .nav-logo span { color: #e23744; }
       .nav-links { display: flex; gap: 28px; }
       .nav-links a { font-size: 14px; font-weight: 500; color: #888; text-decoration: none; transition: color 0.2s; }
       .nav-links a.active, .nav-links a:hover { color: white; }
       .nav-right { display: flex; align-items: center; gap: 16px; }
-      .user-badge { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: #ccc; }
+
+      /* ── USER DROPDOWN ── */
+      .user-menu { position: relative; }
+      .user-trigger {
+        display: flex; align-items: center; gap: 8px;
+        cursor: pointer; padding: 4px 8px 4px 4px;
+        border-radius: 8px; border: 1px solid transparent;
+        transition: all 0.2s; user-select: none;
+      }
+      .user-trigger:hover { border-color: #333; background: #1a1a1a; }
       .avatar {
         width: 36px; height: 36px; background: #e23744; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        color: white; font-size: 14px; font-weight: 700;
+        color: white; font-size: 14px; font-weight: 700; flex-shrink: 0;
       }
-      .logout-btn {
-        font-size: 13px; color: #888; background: none;
-        border: 1px solid #333; padding: 6px 16px; border-radius: 6px;
-        cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.2s;
+      .user-name { font-size: 14px; font-weight: 500; color: #ccc; }
+      .chevron { width: 16px; height: 16px; color: #666; transition: transform 0.2s; }
+      .user-menu.open .chevron { transform: rotate(180deg); }
+
+      .dropdown {
+        position: absolute; top: calc(100% + 8px); right: 0;
+        background: #1a1a1a; border: 1px solid #2a2a2a;
+        border-radius: 12px; min-width: 220px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        opacity: 0; transform: translateY(-8px) scale(0.97);
+        pointer-events: none;
+        transition: opacity 0.18s, transform 0.18s;
+        overflow: hidden;
       }
-      .logout-btn:hover { border-color: #666; color: white; }
+      .user-menu.open .dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+      .dropdown-header {
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid #222;
+        font-size: 11px; font-weight: 700; letter-spacing: 1px;
+        text-transform: uppercase; color: #555;
+      }
+      .dropdown-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 16px; font-size: 13px; font-weight: 500;
+        color: #ccc; cursor: pointer; transition: background 0.15s;
+        border: none; background: none; width: 100%; text-align: left;
+        font-family: "Inter", sans-serif;
+      }
+      .dropdown-item:hover { background: #222; color: white; }
+      .dropdown-item.danger { color: #f87171; }
+      .dropdown-item.danger:hover { background: rgba(226,55,68,0.1); color: #e23744; }
+      .dropdown-divider { height: 1px; background: #222; margin: 4px 0; }
+
       .signin-btn {
         font-size: 14px; font-weight: 600; color: white;
         background: #e23744; padding: 8px 20px; border-radius: 8px;
@@ -40,102 +77,113 @@
       }
       .signin-btn:hover { background: #c0202e; }
 
-      /* Movie info bar */
+      /* ── BOOKINGS PANEL ── */
+      .panel-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+        z-index: 300; opacity: 0; pointer-events: none;
+        transition: opacity 0.25s; backdrop-filter: blur(4px);
+      }
+      .panel-overlay.open { opacity: 1; pointer-events: all; }
+      .bookings-panel {
+        position: fixed; top: 0; right: -420px; width: 400px; max-width: 95vw;
+        height: 100vh; background: #161616; border-left: 1px solid #222;
+        z-index: 400; transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+        display: flex; flex-direction: column;
+        box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+      }
+      .bookings-panel.open { right: 0; }
+      .panel-head {
+        padding: 20px 24px; border-bottom: 1px solid #222;
+        display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+      }
+      .panel-head h2 { font-size: 16px; font-weight: 700; }
+      .panel-close {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: #222; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: #888; transition: all 0.15s;
+      }
+      .panel-close:hover { background: #2a2a2a; color: white; }
+      .panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+      .booking-card {
+        background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px;
+        padding: 14px; margin-bottom: 12px; display: flex; gap: 12px; align-items: flex-start;
+      }
+      .booking-poster { width: 44px; height: 62px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+      .booking-info { flex: 1; min-width: 0; }
+      .booking-movie { font-size: 13px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .booking-seat { font-size: 12px; color: #888; margin-bottom: 4px; }
+      .booking-name { font-size: 11px; color: #555; }
+      .cancel-btn {
+        margin-top: 8px; padding: 5px 12px; background: rgba(226,55,68,0.12);
+        border: 1px solid rgba(226,55,68,0.3); border-radius: 6px;
+        color: #e23744; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: all 0.15s; font-family: "Inter", sans-serif;
+      }
+      .cancel-btn:hover { background: rgba(226,55,68,0.25); border-color: #e23744; }
+      .cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .panel-empty { text-align: center; padding: 60px 20px; color: #444; font-size: 14px; }
+      .panel-empty .em { font-size: 36px; margin-bottom: 12px; }
+
+      /* ── MOVIE BAR ── */
       .movie-bar {
-        background: #1a1a1a;
-        border-bottom: 1px solid #222;
-        padding: 16px 48px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
+        background: #1a1a1a; border-bottom: 1px solid #222;
+        padding: 16px 48px; display: flex; align-items: center; gap: 20px;
       }
       .movie-bar img { width: 50px; height: 70px; object-fit: cover; border-radius: 6px; }
       .movie-bar-info h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
       .movie-bar-info p { font-size: 13px; color: #666; }
       .back-btn {
-        margin-left: auto;
-        font-size: 13px; color: #888; text-decoration: none;
+        margin-left: auto; font-size: 13px; color: #888; text-decoration: none;
         display: flex; align-items: center; gap: 6px;
-        border: 1px solid #333; padding: 7px 16px; border-radius: 6px;
-        transition: all 0.2s;
+        border: 1px solid #333; padding: 7px 16px; border-radius: 6px; transition: all 0.2s;
+        flex-shrink: 0;
       }
       .back-btn:hover { color: white; border-color: #666; }
 
+      /* ── MAIN ── */
       .main { max-width: 900px; margin: 0 auto; padding: 48px 24px; }
 
-      /* Screen */
       .screen-wrap { text-align: center; margin-bottom: 48px; }
       .screen-bar {
         height: 3px;
         background: linear-gradient(90deg, transparent 0%, #e23744 30%, #e23744 70%, transparent 100%);
-        border-radius: 2px;
-        margin-bottom: 8px;
+        border-radius: 2px; margin-bottom: 8px;
         box-shadow: 0 4px 20px rgba(226,55,68,0.4);
       }
       .screen-label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #555; }
 
-      /* Legend */
-      .legend {
-        display: flex; justify-content: center; gap: 28px;
-        margin-bottom: 40px;
-      }
+      .legend { display: flex; justify-content: center; gap: 28px; margin-bottom: 40px; flex-wrap: wrap; }
       .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
       .legend-dot { width: 16px; height: 16px; border-radius: 4px; }
       .legend-dot.available { background: #1a3a1a; border: 1.5px solid #22c55e; }
       .legend-dot.booked { background: #2a2a2a; border: 1.5px solid #444; }
-      .legend-dot.selected { background: #e23744; border: 1.5px solid #e23744; }
 
-      /* Seats */
-      .seats-section { background: #161616; border-radius: 16px; padding: 40px; border: 1px solid #222; }
+      .seats-section { background: #161616; border-radius: 16px; padding: 40px; border: 1px solid #222; overflow-x: auto; }
 
-      .row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 10px;
-        justify-content: center;
-      }
-
-      .row-label {
-        width: 24px;
-        font-size: 12px;
-        font-weight: 600;
-        color: #555;
-        text-align: center;
-        flex-shrink: 0;
-      }
-
+      .row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; justify-content: center; }
+      .row-label { width: 24px; font-size: 12px; font-weight: 600; color: #555; text-align: center; flex-shrink: 0; }
       .row-gap { width: 24px; flex-shrink: 0; }
 
       .seat-wrapper { position: relative; display: inline-block; }
-
       .seat {
         width: 38px; height: 38px; border-radius: 6px 6px 4px 4px;
         display: flex; align-items: center; justify-content: center;
         font-size: 11px; font-weight: 600; cursor: pointer;
-        transition: all 0.15s; user-select: none;
-        border: 1.5px solid;
+        transition: all 0.15s; user-select: none; border: 1.5px solid;
       }
-
-      .seat.available {
-        background: #0d1f0d; border-color: #22c55e; color: #22c55e;
-      }
+      .seat.available { background: #0d1f0d; border-color: #22c55e; color: #22c55e; }
       .seat.available:hover {
         background: #22c55e; color: white; border-color: #22c55e;
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(34,197,94,0.4);
+        transform: scale(1.1); box-shadow: 0 4px 12px rgba(34,197,94,0.4);
       }
-
-      .seat.booked {
-        background: #1e1e1e; border-color: #333; color: #444; cursor: not-allowed;
-      }
+      .seat.booked { background: #1e1e1e; border-color: #333; color: #444; cursor: not-allowed; }
 
       .tooltip {
         position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
         background: #333; color: white; font-size: 11px; font-weight: 500;
         padding: 5px 10px; border-radius: 6px; white-space: nowrap;
-        opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 10;
-        border: 1px solid #444;
+        opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 10; border: 1px solid #444;
       }
       .seat-wrapper:hover .tooltip { opacity: 1; }
 
@@ -146,39 +194,77 @@
       }
       .not-logged-in-bar a { color: #e23744; font-weight: 600; text-decoration: none; }
 
-      .no-movie {
-        text-align: center; padding: 80px 20px; font-size: 16px; color: #555;
-      }
+      .no-movie { text-align: center; padding: 80px 20px; font-size: 16px; color: #555; }
       .no-movie a { color: #e23744; font-weight: 600; text-decoration: none; }
       .no-movie .big { font-size: 48px; margin-bottom: 16px; }
 
-      /* Price strip at bottom */
       .price-strip {
-        margin-top: 32px;
-        background: #1a1a1a;
-        border: 1px solid #222;
-        border-radius: 12px;
-        padding: 20px 28px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        margin-top: 32px; background: #1a1a1a; border: 1px solid #222;
+        border-radius: 12px; padding: 20px 28px;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
       }
       .price-info { font-size: 14px; color: #888; }
       .price-info span { color: white; font-weight: 700; font-size: 16px; }
       .price-tag { font-size: 13px; color: #555; }
+
+      /* ── MOBILE ── */
+      @media (max-width: 768px) {
+        nav { padding: 0 16px; height: 56px; }
+        .nav-left { gap: 20px; }
+        .nav-logo { font-size: 16px; }
+        .nav-links { gap: 16px; }
+        .nav-links a { font-size: 12px; }
+        .user-name { display: none; }
+
+        .movie-bar { padding: 12px 16px; gap: 12px; }
+        .movie-bar img { width: 36px; height: 52px; }
+        .movie-bar-info h2 { font-size: 14px; }
+        .movie-bar-info p { font-size: 11px; }
+        .back-btn { padding: 5px 10px; font-size: 11px; }
+
+        .main { padding: 24px 12px; }
+        .seats-section { padding: 20px 12px; }
+
+        .seat { width: 32px; height: 32px; font-size: 10px; }
+        .row { gap: 6px; }
+        .screen-label { font-size: 9px; letter-spacing: 2px; }
+      }
+
+      @media (max-width: 420px) {
+        .seat { width: 28px; height: 28px; font-size: 9px; }
+        .row { gap: 4px; }
+        .row-label { width: 18px; font-size: 10px; }
+        .row-gap { width: 16px; }
+      }
     </style>
   </head>
   <body>
     <nav>
       <div class="nav-left">
-        <div class="nav-logo">chaicode <span>cinema</span></div>
+        <a href="/movies" class="nav-logo">chaicode <span>cinema</span></a>
         <div class="nav-links">
           <a href="/movies">Movies</a>
-          <a href="/" class="active">Seats</a>
+          <a href="/seats-page" class="active">Seats</a>
         </div>
       </div>
       <div class="nav-right" id="navRight"></div>
     </nav>
+
+    <!-- Bookings panel -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="bookings-panel" id="bookingsPanel">
+      <div class="panel-head">
+        <h2>My Bookings</h2>
+        <button class="panel-close" onclick="closePanel()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+          </svg>
+        </button>
+      </div>
+      <div class="panel-body" id="panelBody">
+        <div class="panel-empty"><div class="em">🎟️</div>Loading your bookings...</div>
+      </div>
+    </div>
 
     <div id="movieBar" class="movie-bar" style="display:none;">
       <img id="barImg" src="" alt="" />
@@ -227,26 +313,133 @@
       const movieTitle = localStorage.getItem("selectedMovieTitle");
       const moviePoster = localStorage.getItem("selectedMoviePoster");
 
-      // Nav
+      // ── Nav ──
       const navRight = document.getElementById("navRight");
       if (token && username) {
         navRight.innerHTML = `
-          <div class="user-badge">
-            <div class="avatar">${username[0].toUpperCase()}</div>
-            <span>${username}</span>
+          <div class="user-menu" id="userMenu">
+            <div class="user-trigger" onclick="toggleDropdown()">
+              <div class="avatar">${username[0].toUpperCase()}</div>
+              <span class="user-name">${username}</span>
+              <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="4,6 8,10 12,6"/>
+              </svg>
+            </div>
+            <div class="dropdown" id="dropdown">
+              <div class="dropdown-header">Account</div>
+              <button class="dropdown-item" onclick="openBookings()">
+                <span>🎟️</span> My Bookings
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" onclick="logout()">
+                <span>↩</span> Logout
+              </button>
+            </div>
           </div>
-          <button class="logout-btn" onclick="logout()">Logout</button>
         `;
       } else {
         navRight.innerHTML = `<a href="/login" class="signin-btn">Sign In</a>`;
         document.getElementById("notLoggedInBar").style.display = "block";
       }
 
-      function logout() {
-        localStorage.clear();
-        window.location.href = "/login";
+      document.addEventListener("click", (e) => {
+        const menu = document.getElementById("userMenu");
+        if (menu && !menu.contains(e.target)) menu.classList.remove("open");
+      });
+
+      function toggleDropdown() {
+        const menu = document.getElementById("userMenu");
+        if (menu) menu.classList.toggle("open");
       }
 
+      function logout() { localStorage.clear(); window.location.href = "/login"; }
+
+      // ── Bookings Panel ──
+      function openBookings() {
+        const menu = document.getElementById("userMenu");
+        if (menu) menu.classList.remove("open");
+        document.getElementById("panelOverlay").classList.add("open");
+        document.getElementById("bookingsPanel").classList.add("open");
+        loadBookings();
+      }
+
+      function closePanel() {
+        document.getElementById("panelOverlay").classList.remove("open");
+        document.getElementById("bookingsPanel").classList.remove("open");
+      }
+
+      async function loadBookings() {
+        const body = document.getElementById("panelBody");
+        body.innerHTML = `<div class="panel-empty"><div class="em">⏳</div>Loading...</div>`;
+        try {
+          const res = await fetch("/api/my-bookings", { headers: { "Authorization": "Bearer " + token } });
+          const bookings = await res.json();
+          if (!bookings.length) {
+            body.innerHTML = `<div class="panel-empty"><div class="em">🎟️</div>No bookings yet.</div>`;
+            return;
+          }
+          body.innerHTML = "";
+          bookings.forEach(b => {
+            const card = document.createElement("div");
+            card.className = "booking-card";
+            card.id = `bcard-${b.id}`;
+            card.innerHTML = `
+              <img class="booking-poster" src="${b.movie_poster}" alt="${b.movie_title}" />
+              <div class="booking-info">
+                <div class="booking-movie">${b.movie_title}</div>
+                <div class="booking-seat">Seat ID #${b.id}</div>
+                <div class="booking-name">Booked for: <strong style="color:#ccc">${b.name || "—"}</strong></div>
+                <button class="cancel-btn" id="cbtn-${b.id}" onclick="cancelSeat(${b.id})">Cancel Booking</button>
+              </div>
+            `;
+            body.appendChild(card);
+          });
+        } catch (err) {
+          body.innerHTML = `<div class="panel-empty"><div class="em">❌</div>Failed to load.</div>`;
+        }
+      }
+
+      async function cancelSeat(seatId) {
+        const btn = document.getElementById(`cbtn-${seatId}`);
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = "Cancelling...";
+        try {
+          const res = await fetch(`/api/cancel-seat/${seatId}`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+          });
+          const data = await res.json();
+          if (data.error) {
+            btn.disabled = false;
+            btn.textContent = "Cancel Booking";
+            alert(data.error);
+          } else {
+            const card = document.getElementById(`bcard-${seatId}`);
+            if (card) {
+              card.style.transition = "opacity 0.3s, transform 0.3s";
+              card.style.opacity = "0";
+              card.style.transform = "translateX(20px)";
+              setTimeout(() => {
+                card.remove();
+                const body = document.getElementById("panelBody");
+                if (!body.querySelector(".booking-card")) {
+                  body.innerHTML = `<div class="panel-empty"><div class="em">🎟️</div>No bookings yet.</div>`;
+                }
+              }, 300);
+            }
+            // Refresh seats view
+            document.getElementById("seatsSection").innerHTML = "";
+            loadSeats();
+          }
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = "Cancel Booking";
+          alert("Something went wrong.");
+        }
+      }
+
+      // ── Seats ──
       if (!movieId) {
         document.getElementById("noMovie").style.display = "block";
       } else {
@@ -266,34 +459,28 @@
         const rowLabels = ["A", "B", "C", "D"];
         const seatsPerRow = 5;
 
-        // Split 20 seats into 4 rows of 5
         rowLabels.forEach((label, rowIndex) => {
           const rowSeats = seats.slice(rowIndex * seatsPerRow, (rowIndex + 1) * seatsPerRow);
           const rowDiv = document.createElement("div");
           rowDiv.className = "row";
 
-          // Row label left
           const labelLeft = document.createElement("div");
           labelLeft.className = "row-label";
           labelLeft.textContent = label;
           rowDiv.appendChild(labelLeft);
 
-          // First 2 seats
           rowSeats.slice(0, 2).forEach((seat, i) => {
             rowDiv.appendChild(createSeat(seat, rowIndex * seatsPerRow + i + 1));
           });
 
-          // Gap
           const gap = document.createElement("div");
           gap.className = "row-gap";
           rowDiv.appendChild(gap);
 
-          // Next 3 seats
           rowSeats.slice(2, 5).forEach((seat, i) => {
             rowDiv.appendChild(createSeat(seat, rowIndex * seatsPerRow + i + 3));
           });
 
-          // Row label right
           const labelRight = document.createElement("div");
           labelRight.className = "row-label";
           labelRight.textContent = label;
@@ -319,10 +506,7 @@
           wrapper.appendChild(tooltip);
         } else {
           seatDiv.addEventListener("click", async () => {
-            if (!token) {
-              window.location.href = "/login";
-              return;
-            }
+            if (!token) { window.location.href = "/login"; return; }
             const name = prompt(`Book seat ${displayNum}?\nEnter your name:`);
             if (!name) return;
 

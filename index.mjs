@@ -175,6 +175,54 @@ app.put("/:id/:name", authenticate, async (req, res) => {
   }
 });
 
+// ── NEW: Get My Bookings ──────────────────────────────────────────────────────
+app.get("/api/my-bookings", authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM seats WHERE user_id = $1 AND isbooked = 1 ORDER BY movie_id, id",
+      [req.user.id]
+    );
+    // Attach movie titles
+    const bookings = result.rows.map(seat => {
+      const movie = movies.find(m => m.id === seat.movie_id) || { title: "Unknown Movie", poster: "" };
+      return { ...seat, movie_title: movie.title, movie_poster: movie.poster };
+    });
+    res.send(bookings);
+  } catch (ex) {
+    console.log(ex);
+    res.status(500).send({ error: "Something went wrong" });
+  }
+});
+
+// ── NEW: Cancel a Seat ───────────────────────────────────────────────────────
+app.delete("/api/cancel-seat/:seatId", authenticate, async (req, res) => {
+  try {
+    const seatId = req.params.seatId;
+    const conn = await pool.connect();
+    await conn.query("BEGIN");
+    // Verify this seat belongs to the requesting user
+    const check = await conn.query(
+      "SELECT * FROM seats WHERE id = $1 AND user_id = $2 AND isbooked = 1 FOR UPDATE",
+      [seatId, req.user.id]
+    );
+    if (check.rowCount === 0) {
+      await conn.query("ROLLBACK");
+      conn.release();
+      return res.status(404).send({ error: "Booking not found or not yours to cancel" });
+    }
+    await conn.query(
+      "UPDATE seats SET isbooked = 0, name = NULL, user_id = NULL WHERE id = $1",
+      [seatId]
+    );
+    await conn.query("COMMIT");
+    conn.release();
+    res.send({ message: "Booking cancelled successfully", seatId });
+  } catch (ex) {
+    console.log(ex);
+    res.status(500).send({ error: "Something went wrong" });
+  }
+});
+
 // ── HTML Pages ────────────────────────────────────────────────────────────────
 app.get("/login",      (req, res) => res.sendFile(__dirname + "/login.html"));
 app.get("/register",   (req, res) => res.sendFile(__dirname + "/register.html"));

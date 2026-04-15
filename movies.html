@@ -9,6 +9,7 @@
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: "Inter", sans-serif; background: #111; min-height: 100vh; color: white; }
 
+      /* ── NAV ── */
       nav {
         background: rgba(17,17,17,0.95);
         backdrop-filter: blur(10px);
@@ -20,23 +21,65 @@
         border-bottom: 1px solid #222;
         position: fixed;
         top: 0; left: 0; right: 0;
-        z-index: 100;
+        z-index: 200;
       }
-      .nav-logo { font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+      .nav-logo { font-size: 18px; font-weight: 800; color: white; letter-spacing: -0.5px; text-decoration: none; }
       .nav-logo span { color: #e23744; }
       .nav-right { display: flex; align-items: center; gap: 14px; }
-      .user-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; }
+
+      /* ── USER DROPDOWN ── */
+      .user-menu { position: relative; }
+      .user-trigger {
+        display: flex; align-items: center; gap: 8px;
+        cursor: pointer; padding: 4px 8px 4px 4px;
+        border-radius: 8px; border: 1px solid transparent;
+        transition: all 0.2s; user-select: none;
+      }
+      .user-trigger:hover { border-color: #333; background: #1a1a1a; }
       .avatar {
         width: 32px; height: 32px; background: #e23744; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        color: white; font-size: 13px; font-weight: 700;
+        color: white; font-size: 13px; font-weight: 700; flex-shrink: 0;
       }
-      .logout-btn {
-        font-size: 12px; color: #888; background: none;
-        border: 1px solid #333; padding: 5px 12px; border-radius: 6px;
-        cursor: pointer; font-family: "Inter", sans-serif; transition: all 0.2s;
+      .user-name { font-size: 13px; font-weight: 600; color: #ccc; }
+      .chevron {
+        width: 16px; height: 16px; color: #666;
+        transition: transform 0.2s;
       }
-      .logout-btn:hover { border-color: #666; color: white; }
+      .user-menu.open .chevron { transform: rotate(180deg); }
+
+      .dropdown {
+        position: absolute; top: calc(100% + 8px); right: 0;
+        background: #1a1a1a; border: 1px solid #2a2a2a;
+        border-radius: 12px; min-width: 220px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        opacity: 0; transform: translateY(-8px) scale(0.97);
+        pointer-events: none;
+        transition: opacity 0.18s, transform 0.18s;
+        overflow: hidden;
+      }
+      .user-menu.open .dropdown {
+        opacity: 1; transform: translateY(0) scale(1);
+        pointer-events: all;
+      }
+      .dropdown-header {
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid #222;
+        font-size: 11px; font-weight: 700; letter-spacing: 1px;
+        text-transform: uppercase; color: #555;
+      }
+      .dropdown-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 16px; font-size: 13px; font-weight: 500;
+        color: #ccc; cursor: pointer; transition: background 0.15s;
+        border: none; background: none; width: 100%; text-align: left;
+        font-family: "Inter", sans-serif;
+      }
+      .dropdown-item:hover { background: #222; color: white; }
+      .dropdown-item.danger { color: #f87171; }
+      .dropdown-item.danger:hover { background: rgba(226,55,68,0.1); color: #e23744; }
+      .dropdown-divider { height: 1px; background: #222; margin: 4px 0; }
+
       .signin-btn {
         font-size: 13px; font-weight: 600; color: white;
         background: #e23744; padding: 7px 18px; border-radius: 7px;
@@ -44,7 +87,69 @@
       }
       .signin-btn:hover { background: #c0202e; }
 
-      /* Hero */
+      /* ── BOOKINGS PANEL (slide-in) ── */
+      .panel-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+        z-index: 300; opacity: 0; pointer-events: none;
+        transition: opacity 0.25s;
+        backdrop-filter: blur(4px);
+      }
+      .panel-overlay.open { opacity: 1; pointer-events: all; }
+
+      .bookings-panel {
+        position: fixed; top: 0; right: -420px; width: 400px; max-width: 95vw;
+        height: 100vh; background: #161616; border-left: 1px solid #222;
+        z-index: 400; transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+        display: flex; flex-direction: column;
+        box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+      }
+      .bookings-panel.open { right: 0; }
+
+      .panel-head {
+        padding: 20px 24px; border-bottom: 1px solid #222;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .panel-head h2 { font-size: 16px; font-weight: 700; }
+      .panel-close {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: #222; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: #888; transition: all 0.15s;
+      }
+      .panel-close:hover { background: #2a2a2a; color: white; }
+
+      .panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+      .booking-card {
+        background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 12px;
+        padding: 14px; margin-bottom: 12px; display: flex; gap: 12px;
+        align-items: flex-start;
+      }
+      .booking-poster {
+        width: 44px; height: 62px; object-fit: cover; border-radius: 6px;
+        flex-shrink: 0;
+      }
+      .booking-info { flex: 1; min-width: 0; }
+      .booking-movie { font-size: 13px; font-weight: 700; margin-bottom: 3px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .booking-seat { font-size: 12px; color: #888; margin-bottom: 8px; }
+      .booking-name { font-size: 11px; color: #555; }
+      .cancel-btn {
+        margin-top: 8px; padding: 5px 12px; background: rgba(226,55,68,0.12);
+        border: 1px solid rgba(226,55,68,0.3); border-radius: 6px;
+        color: #e23744; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: all 0.15s; font-family: "Inter", sans-serif;
+      }
+      .cancel-btn:hover { background: rgba(226,55,68,0.25); border-color: #e23744; }
+      .cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .panel-empty {
+        text-align: center; padding: 60px 20px; color: #444; font-size: 14px;
+      }
+      .panel-empty .em { font-size: 36px; margin-bottom: 12px; }
+
+      /* ── HERO ── */
       .hero {
         margin-top: 60px;
         position: relative;
@@ -53,55 +158,29 @@
         display: flex;
         align-items: center;
       }
-
       .hero-poster {
-        position: absolute;
-        left: 0; top: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center center;
-        display: block;
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center center;
       }
-
       .hero-gradient {
-        position: absolute;
-        left: 0; top: 0; right: 0; bottom: 0;
-        background: linear-gradient(
-          to right,
-          rgba(17,17,17,0.1) 0%,
-          rgba(17,17,17,0.45) 50%,
-          rgba(17,17,17,0.92) 72%,
-          #111 100%
-        );
+        position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+        background: linear-gradient(to right, rgba(17,17,17,0.1) 0%, rgba(17,17,17,0.45) 50%, rgba(17,17,17,0.92) 72%, #111 100%);
       }
-
       .hero-bottom-fade {
-        position: absolute;
-        left: 0; right: 0; bottom: 0;
-        height: 70px;
-        background: linear-gradient(to top, #111, transparent);
+        position: absolute; left: 0; right: 0; bottom: 0;
+        height: 70px; background: linear-gradient(to top, #111, transparent);
       }
-
       .hero-content {
-        position: relative;
-        z-index: 2;
+        position: relative; z-index: 2;
         padding: 0 60px;
         margin-left: auto;
         width: 400px;
       }
-
       .hero-badge {
-        display: inline-block;
-        background: #e23744;
-        color: white;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        padding: 3px 8px;
-        border-radius: 3px;
-        margin-bottom: 10px;
+        display: inline-block; background: #e23744; color: white;
+        font-size: 10px; font-weight: 700; letter-spacing: 2px;
+        text-transform: uppercase; padding: 3px 8px; border-radius: 3px; margin-bottom: 10px;
       }
       .hero-content h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; line-height: 1.15; }
       .hero-content p { font-size: 13px; color: #bbb; margin-bottom: 18px; }
@@ -113,12 +192,11 @@
       }
       .hero-btn:hover { background: #c0202e; }
 
-      /* Main */
+      /* ── MAIN ── */
       .main { padding: 36px 40px; }
-
       .section-title { font-size: 17px; font-weight: 700; color: white; margin-bottom: 20px; }
 
-      /* Compact 6-column grid */
+      /* 6-col desktop, responsive below */
       .movies-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
@@ -127,27 +205,17 @@
       }
 
       .movie-card {
-        background: #1a1a1a;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid #222;
+        background: #1a1a1a; border-radius: 8px; overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #222;
       }
-      .movie-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-        border-color: #444;
-      }
-
+      .movie-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.5); border-color: #444; }
       .movie-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
-
       .movie-info { padding: 8px; }
       .movie-title { font-size: 11px; font-weight: 700; color: white; margin-bottom: 2px; line-height: 1.3; }
       .movie-meta { font-size: 10px; color: #555; margin-bottom: 5px; }
       .movie-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 7px; align-items: center; }
       .tag { font-size: 9px; font-weight: 500; padding: 1px 5px; border-radius: 3px; background: #222; color: #888; border: 1px solid #2a2a2a; }
       .rating { font-size: 10px; font-weight: 700; color: #22c55e; }
-
       .book-btn {
         width: 100%; padding: 6px; background: #e23744; color: white; border: none;
         border-radius: 5px; font-family: "Inter", sans-serif; font-size: 10px;
@@ -155,24 +223,71 @@
       }
       .book-btn:hover { background: #c0202e; }
 
-      /* Info strip */
+      /* ── INFO STRIP ── */
       .info-strip {
         display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
         padding-top: 32px; border-top: 1px solid #1e1e1e;
       }
       .info-card {
-        background: #161616; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; text-align: center;
+        background: #161616; border: 1px solid #1e1e1e; border-radius: 10px;
+        padding: 20px; text-align: center;
       }
       .info-card .icon { font-size: 24px; margin-bottom: 8px; }
       .info-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
       .info-card p { font-size: 12px; color: #555; line-height: 1.5; }
+
+      /* ── MOBILE RESPONSIVE ── */
+      @media (max-width: 900px) {
+        nav { padding: 0 20px; }
+        .movies-grid { grid-template-columns: repeat(3, 1fr); }
+        .main { padding: 24px 20px; }
+        .info-strip { grid-template-columns: 1fr; gap: 12px; }
+      }
+
+      @media (max-width: 640px) {
+        nav { padding: 0 16px; height: 56px; }
+        .nav-logo { font-size: 15px; }
+        .user-name { display: none; }
+
+        .hero { height: 240px; margin-top: 56px; }
+        .hero-content { padding: 0 20px; width: 100%; margin-left: 0; }
+        .hero-gradient {
+          background: linear-gradient(to top, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.6) 60%, transparent 100%);
+        }
+        .hero-content h1 { font-size: 20px; }
+        .hero-content p { font-size: 12px; margin-bottom: 12px; }
+        .hero-btn { font-size: 12px; padding: 8px 16px; }
+
+        .movies-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .main { padding: 20px 16px; }
+        .section-title { font-size: 15px; }
+        .info-strip { grid-template-columns: 1fr; }
+
+        .bookings-panel { width: 100%; max-width: 100%; border-left: none; border-top: 1px solid #222; }
+      }
     </style>
   </head>
   <body>
     <nav>
-      <div class="nav-logo">chaicode <span>cinema</span></div>
+      <a href="/movies" class="nav-logo">chaicode <span>cinema</span></a>
       <div class="nav-right" id="navRight"></div>
     </nav>
+
+    <!-- Bookings panel overlay -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="bookings-panel" id="bookingsPanel">
+      <div class="panel-head">
+        <h2>My Bookings</h2>
+        <button class="panel-close" onclick="closePanel()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+          </svg>
+        </button>
+      </div>
+      <div class="panel-body" id="panelBody">
+        <div class="panel-empty"><div class="em">🎟️</div>Loading your bookings...</div>
+      </div>
+    </div>
 
     <div class="hero">
       <img class="hero-poster" src="/Dhurandhar.png" alt="Dhurandhar The Revenge" />
@@ -212,22 +327,144 @@
     <script>
       const token = localStorage.getItem("token");
       const username = localStorage.getItem("username");
-
       const navRight = document.getElementById("navRight");
+
+      // ── Build Nav ──
       if (token && username) {
         navRight.innerHTML = `
-          <div class="user-badge">
-            <div class="avatar">${username[0].toUpperCase()}</div>
-            <span>${username}</span>
+          <div class="user-menu" id="userMenu">
+            <div class="user-trigger" onclick="toggleDropdown()">
+              <div class="avatar">${username[0].toUpperCase()}</div>
+              <span class="user-name">${username}</span>
+              <svg class="chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="4,6 8,10 12,6"/>
+              </svg>
+            </div>
+            <div class="dropdown" id="dropdown">
+              <div class="dropdown-header">Account</div>
+              <button class="dropdown-item" onclick="openBookings()">
+                <span>🎟️</span> My Bookings
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" onclick="logout()">
+                <span>↩</span> Logout
+              </button>
+            </div>
           </div>
-          <button class="logout-btn" onclick="logout()">Logout</button>
         `;
       } else {
         navRight.innerHTML = `<a href="/login" class="signin-btn">Sign In</a>`;
       }
 
+      // Close dropdown when clicking outside
+      document.addEventListener("click", (e) => {
+        const menu = document.getElementById("userMenu");
+        if (menu && !menu.contains(e.target)) {
+          menu.classList.remove("open");
+        }
+      });
+
+      function toggleDropdown() {
+        const menu = document.getElementById("userMenu");
+        if (menu) menu.classList.toggle("open");
+      }
+
       function logout() { localStorage.clear(); window.location.reload(); }
 
+      // ── Bookings Panel ──
+      function openBookings() {
+        // close dropdown
+        const menu = document.getElementById("userMenu");
+        if (menu) menu.classList.remove("open");
+        // open panel
+        document.getElementById("panelOverlay").classList.add("open");
+        document.getElementById("bookingsPanel").classList.add("open");
+        loadBookings();
+      }
+
+      function closePanel() {
+        document.getElementById("panelOverlay").classList.remove("open");
+        document.getElementById("bookingsPanel").classList.remove("open");
+      }
+
+      async function loadBookings() {
+        const body = document.getElementById("panelBody");
+        body.innerHTML = `<div class="panel-empty"><div class="em">⏳</div>Loading...</div>`;
+        try {
+          const res = await fetch("/api/my-bookings", {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          const bookings = await res.json();
+
+          if (!bookings.length) {
+            body.innerHTML = `<div class="panel-empty"><div class="em">🎟️</div>No bookings yet.<br/>Go grab some seats!</div>`;
+            return;
+          }
+
+          body.innerHTML = "";
+          bookings.forEach(b => {
+            const rowLabel = ["A","B","C","D"];
+            // compute display seat number within movie (1-20)
+            // We don't have relative seat number from DB, show seat id
+            const card = document.createElement("div");
+            card.className = "booking-card";
+            card.id = `bcard-${b.id}`;
+            card.innerHTML = `
+              <img class="booking-poster" src="${b.movie_poster}" alt="${b.movie_title}" />
+              <div class="booking-info">
+                <div class="booking-movie">${b.movie_title}</div>
+                <div class="booking-seat">Seat ID #${b.id}</div>
+                <div class="booking-name">Booked for: <strong style="color:#ccc">${b.name || "—"}</strong></div>
+                <button class="cancel-btn" id="cbtn-${b.id}" onclick="cancelSeat(${b.id})">Cancel Booking</button>
+              </div>
+            `;
+            body.appendChild(card);
+          });
+        } catch (err) {
+          body.innerHTML = `<div class="panel-empty"><div class="em">❌</div>Failed to load bookings.</div>`;
+        }
+      }
+
+      async function cancelSeat(seatId) {
+        const btn = document.getElementById(`cbtn-${seatId}`);
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = "Cancelling...";
+        try {
+          const res = await fetch(`/api/cancel-seat/${seatId}`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+          });
+          const data = await res.json();
+          if (data.error) {
+            btn.disabled = false;
+            btn.textContent = "Cancel Booking";
+            alert(data.error);
+          } else {
+            // Remove card with animation
+            const card = document.getElementById(`bcard-${seatId}`);
+            if (card) {
+              card.style.transition = "opacity 0.3s, transform 0.3s";
+              card.style.opacity = "0";
+              card.style.transform = "translateX(20px)";
+              setTimeout(() => {
+                card.remove();
+                // check if empty
+                const body = document.getElementById("panelBody");
+                if (!body.querySelector(".booking-card")) {
+                  body.innerHTML = `<div class="panel-empty"><div class="em">🎟️</div>No bookings yet.<br/>Go grab some seats!</div>`;
+                }
+              }, 300);
+            }
+          }
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = "Cancel Booking";
+          alert("Something went wrong. Try again.");
+        }
+      }
+
+      // ── Hero ──
       function bookHero() {
         if (!token) { window.location.href = "/login"; return; }
         localStorage.setItem("selectedMovieId", 1);
@@ -236,6 +473,7 @@
         window.location.href = "/seats-page";
       }
 
+      // ── Movies Grid ──
       async function loadMovies() {
         const res = await fetch("/api/movies");
         const movies = await res.json();
