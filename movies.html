@@ -2,6 +2,9 @@
 <html lang="en">
   <head>
     <link rel="prefetch" href="/seats-page" />
+    <link rel="preload" href="/dhurandhar.avif" as="image" />
+    <link rel="preload" href="/kgf.jpg" as="image" />
+    <link rel="preload" href="/pushpa.jpg" as="image" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movies | ChaiCode Cinema</title>
@@ -197,7 +200,6 @@
       .main { padding: 36px 40px; }
       .section-title { font-size: 17px; font-weight: 700; color: white; margin-bottom: 20px; }
 
-      /* 6-col desktop, responsive below */
       .movies-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
@@ -251,15 +253,15 @@
         .user-name { display: none; }
 
         .hero { height: 240px; margin-top: 56px; }
-        .hero-content .hero-content { 
-        padding: 0 20px; 
-        width: 100%; 
-        margin-left: 0; 
-        text-align: left;
-        position: absolute;
-        bottom: 20px;
-        left: 0;
-       }
+        .hero-content {
+          padding: 0 20px;
+          width: 100%;
+          margin-left: 0;
+          text-align: left;
+          position: absolute;
+          bottom: 20px;
+          left: 0;
+        }
         .hero-gradient {
           background: linear-gradient(to top, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.6) 60%, transparent 100%);
         }
@@ -282,7 +284,6 @@
       <div class="nav-right" id="navRight"></div>
     </nav>
 
-    <!-- Bookings panel overlay -->
     <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
     <div class="bookings-panel" id="bookingsPanel">
       <div class="panel-head">
@@ -365,7 +366,6 @@
         navRight.innerHTML = `<a href="/login" class="signin-btn">Sign In</a>`;
       }
 
-      // Close dropdown when clicking outside
       document.addEventListener("click", (e) => {
         const menu = document.getElementById("userMenu");
         if (menu && !menu.contains(e.target)) {
@@ -382,10 +382,8 @@
 
       // ── Bookings Panel ──
       function openBookings() {
-        // close dropdown
         const menu = document.getElementById("userMenu");
         if (menu) menu.classList.remove("open");
-        // open panel
         document.getElementById("panelOverlay").classList.add("open");
         document.getElementById("bookingsPanel").classList.add("open");
         loadBookings();
@@ -412,9 +410,6 @@
 
           body.innerHTML = "";
           bookings.forEach(b => {
-            const rowLabel = ["A","B","C","D"];
-            // compute display seat number within movie (1-20)
-            // We don't have relative seat number from DB, show seat id
             const card = document.createElement("div");
             card.className = "booking-card";
             card.id = `bcard-${b.id}`;
@@ -424,7 +419,7 @@
                 <div class="booking-movie">${b.movie_title}</div>
                 <div class="booking-seat">Seat ID #${b.id}</div>
                 <div class="booking-name">Booked for: <strong style="color:#ccc">${b.name || "—"}</strong></div>
-                <button class="cancel-btn" id="cbtn-${b.id}" onclick="cancelSeat(${b.id})">Cancel Booking</button>
+                <button class="cancel-btn" id="cbtn-${b.id}" onclick="cancelSeat(${b.id}, ${b.movie_id})">Cancel Booking</button>
               </div>
             `;
             body.appendChild(card);
@@ -434,7 +429,7 @@
         }
       }
 
-      async function cancelSeat(seatId) {
+      async function cancelSeat(seatId, movieId) {
         const btn = document.getElementById(`cbtn-${seatId}`);
         if (!btn) return;
         btn.disabled = true;
@@ -450,7 +445,9 @@
             btn.textContent = "Cancel Booking";
             alert(data.error);
           } else {
-            // Remove card with animation
+            // Clear seat cache so next visit gets fresh data from DB
+            localStorage.removeItem(`seats_${movieId}`);
+
             const card = document.getElementById(`bcard-${seatId}`);
             if (card) {
               card.style.transition = "opacity 0.3s, transform 0.3s";
@@ -458,7 +455,6 @@
               card.style.transform = "translateX(20px)";
               setTimeout(() => {
                 card.remove();
-                // check if empty
                 const body = document.getElementById("panelBody");
                 if (!body.querySelector(".booking-card")) {
                   body.innerHTML = `<div class="panel-empty"><div class="em">🎟️</div>No bookings yet.<br/>Go grab some seats!</div>`;
@@ -474,11 +470,17 @@
       }
 
       // ── Hero ──
-      function bookHero() {
+      async function bookHero() {
         if (!token) { window.location.href = "/login"; return; }
         localStorage.setItem("selectedMovieId", 1);
         localStorage.setItem("selectedMovieTitle", "Dhurandhar The Revenge");
         localStorage.setItem("selectedMoviePoster", "/dhurandhar.avif");
+
+        // Pre-fetch seats while user is still on this page
+        const res = await fetch("/seats/1");
+        const seats = await res.json();
+        localStorage.setItem("seats_1", JSON.stringify(seats));
+
         window.location.href = "/seats-page";
       }
 
@@ -491,7 +493,7 @@
           const card = document.createElement("div");
           card.className = "movie-card";
           card.innerHTML = `
-            <img class="movie-poster" src="${m.poster}" alt="${m.title}" />
+            <img class="movie-poster" src="${m.poster}" alt="${m.title}" loading="eager" />
             <div class="movie-info">
               <div class="movie-title">${m.title}</div>
               <div class="movie-meta">${m.duration} · ${m.language}</div>
@@ -506,11 +508,17 @@
         });
       }
 
-      function bookMovie(id, title, poster) {
+      async function bookMovie(id, title, poster) {
         if (!token) { window.location.href = "/login"; return; }
         localStorage.setItem("selectedMovieId", id);
         localStorage.setItem("selectedMovieTitle", title);
         localStorage.setItem("selectedMoviePoster", poster);
+
+        // Pre-fetch seats while user is still on this page
+        const res = await fetch(`/seats/${id}`);
+        const seats = await res.json();
+        localStorage.setItem(`seats_${id}`, JSON.stringify(seats));
+
         window.location.href = "/seats-page";
       }
 
