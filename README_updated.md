@@ -1,6 +1,6 @@
 # 🎬 ChaiCode Cinema
 
-A full-stack movie seat booking web app. Users can register, log in, browse movies, and book seats in real time.
+A full-stack movie seat booking web app. Users can register, log in, browse movies, book seats in real time and cancel them according to choice.
 
 ---
 
@@ -11,6 +11,8 @@ A full-stack movie seat booking web app. Users can register, log in, browse movi
 - User registration and login with hashed passwords and JWT auth
 - Seat booking is protected — login required
 - Race-condition safe booking using PostgreSQL transactions
+- View current bookings
+- Cancel tickets and seats reopen for other users
 
 ---
 
@@ -54,7 +56,6 @@ App runs on `http://localhost:8080` by default.
 ## Pages
 
 | Route | Page |
-|---|---|
 | `/movies` | Movies listing |
 | `/login` | Login |
 | `/register` | Register |
@@ -65,3 +66,10 @@ App runs on `http://localhost:8080` by default.
 ## License
 
 ISC
+
+---
+
+# Author
+Baibhav Tibrewal
+
+⭐ If you like this project, consider giving it a star!
