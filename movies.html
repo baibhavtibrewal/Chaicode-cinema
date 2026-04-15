@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="prefetch" href="/seats-page" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movies | ChaiCode Cinema</title>
@@ -250,7 +251,15 @@
         .user-name { display: none; }
 
         .hero { height: 240px; margin-top: 56px; }
-        .hero-content { padding: 0 20px; width: 100%; margin-left: 0; }
+        .hero-content .hero-content { 
+        padding: 0 20px; 
+        width: 100%; 
+        margin-left: 0; 
+        text-align: left;
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+       }
         .hero-gradient {
           background: linear-gradient(to top, rgba(17,17,17,0.95) 0%, rgba(17,17,17,0.6) 60%, transparent 100%);
         }
@@ -290,7 +299,7 @@
     </div>
 
     <div class="hero">
-      <img class="hero-poster" src="/Dhurandhar.png" alt="Dhurandhar The Revenge" />
+      <img class="hero-poster" src="/Dhurandharr.avif" alt="Dhurandhar The Revenge" fetchpriority="high" loading="eager" />
       <div class="hero-gradient"></div>
       <div class="hero-bottom-fade"></div>
       <div class="hero-content">
